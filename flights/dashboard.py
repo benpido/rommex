@@ -1,19 +1,17 @@
-import os
 from django.conf import settings
-from .services.ObtenerVuelos import fetch_flights
-from .services.Clean import filtrar_region_antofagasta
+from .services.ObtenerVuelos import main
 from .services.Procesar import procesar_datos
-
-PARQUET_FILE = settings.PARQUET_FINAL
-
 
 def run_etl():
     """
-    Ejecuta la secuencia: obtener vuelos, filtrar, procesar y guardar parquet.
+    Ejecuta la secuencia completa de ETL y procesamiento.
     """
-    # 1) Obtener datos
-    vuelos = fetch_flights()
-    # 2) Limpieza
-    #vuelos_limpios = filtrar_region_antofagasta(vuelos)
-    # 3) Procesamiento y escritura
-    procesar_datos(vuelos, PARQUET_FILE)
+    # 1) Obtener y guardar vuelos crudos
+    main(
+        settings.JSON_CONFIG,
+        settings.PARQUET_HISTORICO,
+        settings.PARQUET_API,
+    )
+
+    # 2) Procesamiento y escritura final
+    procesar_datos(settings.PARQUET_API, settings.PARQUET_FINAL)

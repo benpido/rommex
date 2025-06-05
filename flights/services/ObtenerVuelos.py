@@ -133,7 +133,7 @@ def save_raw_parquet_pa(
     parquet_path: str,
     id_field: str = "id",
     compression: str = "zstd",
-) -> pa.Table:
+    )  -> pa.Table:
     """
     Guarda el histórico RAW en formato Parquet usando PyArrow puro.
 
@@ -233,9 +233,7 @@ def save_flights_to_parquet(flights, output_path):
 def main(json_config,paquet_historico,parquet_api) -> list[dict]:
     cfg   = load_json(json_config, {})          # tu helper actual
     query = {"start": get_last_sync_timestamp_arrow(paquet_historico), "end": get_now_timestamp(), "detail_level": "comprehensive"} 
-    
     api_resp, stats = fetch_flights(query, cfg)
-    
     nuevos = save_raw_parquet_pa(api_resp, paquet_historico)  # guarda el histórico RAW
     save_flights_to_parquet(nuevos.to_dict("records"), parquet_api)  # guarda el batch nuevo
        
