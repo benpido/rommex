@@ -1,4 +1,10 @@
 *.pbix
 /data/
 __pycache__/
+*.py[cod]
+*$py.class
 *.sqlite3
+.env
+*.log
+*.tmp
+*.bak
