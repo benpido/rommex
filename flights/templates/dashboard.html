@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h2>Dashboard</h2>
+{% if message %}<p style="color:green;">{{ message }}</p>{% endif %}
+{% if error %}<p style="color:red;">{{ error }}</p>{% endif %}
+<p><a href="{% url 'refresh_data' %}">Actualizar datos</a></p>
+<p><a href="{% url 'download_parquet' %}">Descargar archivo Parquet</a></p>
+{% endblock %}

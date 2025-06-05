@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}FlightData{% endblock %}</title>
+</head>
+<body>
+  {% if user.is_authenticated %}
+    <p>Hola, {{ user.username }} | <a href="{% url 'logout' %}">Cerrar sesión</a></p>
+  {% else %}
+    <a href="{% url 'login' %}">Iniciar sesión</a>
+  {% endif %}
+  <hr>
+  {% block content %}{% endblock %}
+</body>
+</html>

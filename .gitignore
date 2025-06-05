@@ -1,0 +1,4 @@
+*.pbix
+/data/
+__pycache__/
+*.sqlite3
