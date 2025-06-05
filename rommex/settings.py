@@ -81,8 +81,7 @@ TEMPLATES = [
         },
     },
 ]
-default_parquet = BASE_DIR / 'data/FlightsFinal.parquet'
-PARQUET_FINAL = default_parquet
+PARQUET_FINAL = BASE_DIR / 'data/FlightsFinal.parquet'
 PARQUET_API = BASE_DIR / 'data/flights_api.parquet'
 PARQUET_HISTORICO = BASE_DIR / 'data/historico.parquet'
 JSON_CONFIG = BASE_DIR / 'data/config.json'

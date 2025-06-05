@@ -20,7 +20,7 @@ def refresh_data(request):
 
 @login_required
 def download_parquet(request):
-    path = settings.PARQUET_PATH
+    path = settings.PARQUET_FINAL
     if os.path.exists(path):
         return FileResponse(open(path, 'rb'), as_attachment=True, filename=os.path.basename(path))
     return render(request, 'dashboard.html', {'error': 'Archivo no encontrado.'})

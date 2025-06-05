@@ -4,7 +4,7 @@ from .services.ObtenerVuelos import fetch_flights
 from .services.Clean import filtrar_region_antofagasta
 from .services.Procesar import procesar_datos
 
-PARQUET_FILE = settings.PARQUET_PATH
+PARQUET_FILE = settings.PARQUET_FINAL
 
 
 def run_etl():
