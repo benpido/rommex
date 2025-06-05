@@ -22,5 +22,10 @@ def refresh_data(request):
 def download_parquet(request):
     path = settings.PARQUET_FINAL
     if os.path.exists(path):
-        return FileResponse(open(path, 'rb'), as_attachment=True, filename=os.path.basename(path))
+        return FileResponse(
+            open(path, "rb"),
+            as_attachment=True,
+            filename=os.path.basename(path),
+        )
     return render(request, 'dashboard.html', {'error': 'Archivo no encontrado.'})
+    

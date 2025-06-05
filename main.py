@@ -1,19 +1,26 @@
 # main.py
 import os
-import flights.services.ObtenerVuelos as ObtenerVuelos
-import flights.services.Procesar as Procesar
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "rommex.settings")
+from django.conf import settings
+from flights.services.ObtenerVuelos import main as obtener_vuelos
+from flights.services.Procesar import procesar_datos
+
+
+def main() -> None:
+    """Execute the full ETL process using project settings."""
+
+    stats = obtener_vuelos(
+        settings.JSON_CONFIG,
+        settings.PARQUET_HISTORICO,
+        settings.PARQUET_API,
+    )
+
+    procesar_datos(settings.PARQUET_API, settings.PARQUET_FINAL)
+
+    total = stats.get("total") if isinstance(stats, dict) else "?"
+    print(f"ETL completado. Vuelos procesados: {total}")
+
 
 if __name__ == "__main__":
-    # Llama a la función principal 'main' de ObtenerVuelos.py:
-    #  - Carga configuración y rutas.
-    #  - Recupera vuelos nuevos de la API (sincronización incremental).
-    #  - Almacena histórico y genera CSV de vuelos incrementales.
-    nuevos = ObtenerVuelos.main()  # <-- Necesita devolver 'nuevos'
-
-    if nuevos:
-        env_dir = os.path.dirname(__file__)
-        input_csv = os.path.join(env_dir, "flights_api.parquet")
-        output = os.path.join(env_dir, "FlightsFinal.parquet")
-        Procesar.main(input_csv, output)
-    else:
-        print("No hay vuelos nuevos → salto el procesamiento de Parquet.")
+    main()
+    
