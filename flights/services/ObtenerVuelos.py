@@ -230,11 +230,14 @@ def save_flights_to_parquet(flights, output_path):
     df.to_parquet(output_path, index=False)
 
 
-def main(json_config,paquet_historico,parquet_api) -> list[dict]:
-    cfg   = load_json(json_config, {})          # tu helper actual
-    query = {"start": get_last_sync_timestamp_arrow(paquet_historico), "end": get_now_timestamp(), "detail_level": "comprehensive"} 
+def main(json_config, paquet_historico, parquet_api) -> dict:
+    cfg   = load_json(json_config, {})
+    query = {
+        "start": get_last_sync_timestamp_arrow(paquet_historico),
+        "end": get_now_timestamp(),
+        "detail_level": "comprehensive",
+    }
     api_resp, stats = fetch_flights(query, cfg)
-    nuevos = save_raw_parquet_pa(api_resp, paquet_historico)  # guarda el histórico RAW
-    save_flights_to_parquet(nuevos.to_dict("records"), parquet_api)  # guarda el batch nuevo
-       
-    return stats 
+    nuevos = save_raw_parquet_pa(api_resp, paquet_historico)
+    save_flights_to_parquet(nuevos.to_pandas().to_dict("records"), parquet_api)
+    return stats

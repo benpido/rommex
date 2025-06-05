@@ -17,8 +17,10 @@ descargar el archivo procesado.
 - pip install -r requirements.txt
 
 ## Configuración
-Crea una carpeta `data/` (excluida del repositorio) con los siguientes
+- Crea una carpeta `data/` (excluida del repositorio) con los siguientes
 archivos:
+
+- Define la variable de entorno `DJANGO_SECRET_KEY` con una cadena aleatoria antes de ejecutar la aplicación.
 
 - `config.json` con las credenciales y URL de la API.
     `
@@ -31,11 +33,12 @@ archivos:
     `
 - `historico.parquet` 
     - almacenara el histórico completo de la empresa
-- `flights_api.parquet` 
+- `flights_api.parquet`
     - archivo temporal generado en cada consulta a la API
-- `FlightsFinal.parquet` 
+- `FlightsFinal.parquet`
     - resultado final del procesamiento, con estructura definida
     Air Hours,Air Minutes,Air Seconds,Air+Ground Seconds,Drone Name,Equipo Piloto,Flight/Service Date,Ground Seconds,ID,Km Recorridos,Landing Bat %,Latitude,Longitude,Max Altitude (Meters),Max Distance (Meters),Pilot-in-Command,Takeoff Bat %,Total Mileage (Meters),Turno,Uso % Bat
+    - el archivo se actualiza con cada ejecución para mantener el histórico procesado
 
 ## Uso
 1. Ejecuta las migraciones y crea un usuario administrador:

@@ -3,11 +3,12 @@
 # Vuelos que esten fuera de la region de antofagasta
 import pandas as pd
 from typing import Optional, Tuple
+from pathlib import Path
 def count_and_prune_duplicates(
     df: pd.DataFrame,
     subset: Optional[list[str]] = None,
     keep: str = "first"
-) -> Tuple[int, pd.DataFrame, pd.DataFrame]:
+ ) -> Tuple[int, pd.DataFrame, pd.DataFrame]:
     """
     Cuenta filas duplicadas y devuelve también el DataFrame depurado.
 
