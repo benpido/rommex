@@ -2,9 +2,6 @@
 # Y descartar registros que cumplan con ciertas condiciones.
 # Vuelos que esten fuera de la region de antofagasta
 import pandas as pd
-from shapely.geometry import Point, Polygon
-import pandas as pd
-from pathlib import Path
 from typing import Optional, Tuple
 def count_and_prune_duplicates(
     df: pd.DataFrame,

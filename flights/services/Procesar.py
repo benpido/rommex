@@ -1,7 +1,6 @@
 # El objetivo principal es crear columnas calculadas a partir de un CSV de vuelos
 # y guardar el resultado en un nuevo archivo CSV o Parquet.
 import pandas as pd
-from flights.services.Clean import filtrar_region_antofagasta
 
 # Listas de pilotos por equipo
 pilotos_turno_a = ["Marcelo Crosgrover", "Fernando Vargas"]

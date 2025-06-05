@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
 from django.conf import settings
@@ -28,4 +28,3 @@ def download_parquet(request):
             filename=os.path.basename(path),
         )
     return render(request, 'dashboard.html', {'error': 'Archivo no encontrado.'})
-    
