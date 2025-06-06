@@ -12,8 +12,12 @@ def dashboard_view(request):
 @login_required
 def refresh_data(request):
     try:
-        run_etl()
-        message = 'Datos actualizados correctamente.'
+        stats = run_etl()
+        message = (
+            f"Vuelos nuevos: {stats['fetched']} | "
+            f"Antofagasta: {stats['kept']} | "
+            f"Descartados: {stats['discarded']} (fuera de la región)")
+            
     except Exception as e:
         message = f'Error al actualizar: {e}'
     return render(request, 'dashboard.html', {'message': message})

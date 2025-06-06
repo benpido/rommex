@@ -5,7 +5,10 @@ obteniendo el archivo parquet resultante.
 
 ## Descripción
 Los módulos dentro de `flights/services` implementan un flujo ETL completo:
-
+- Tras cada consulta a la API se muestran cuántos vuelos son nuevos,
+  cuántos pertenecen a la Región de Antofagasta y cuántos se descartan por
+  estar fuera de dicha zona.
+  
 - **ObtenerVuelos** descarga registros de vuelos desde la API externa de AirDatta y mantiene un
   histórico en `data/historico.parquet`.
 - **Clean** y **Procesar** normalizan la información y calculan métricas
