@@ -8,12 +8,13 @@ def run_etl():
     Ejecuta la secuencia completa de ETL y procesamiento.
     """
     # 1) Obtener y guardar vuelos crudos
-    new_tbl, stats = main(
+    new_tbl, df_new, stats = main(
         settings.JSON_CONFIG,
         settings.PARQUET_HISTORICO,
         settings.PARQUET_API,
     )
-    records = new_tbl.to_pandas().to_dict("records") if new_tbl.num_rows else []
+    # 'df_new' contiene las columnas limpias del batch recien descargado
+    records = df_new.to_dict("records") if not df_new.empty else []
     kept, discarded = filtrar_region_antofagasta(records)
     print(
         f"Nuevos vuelos: {new_tbl.num_rows} | "
