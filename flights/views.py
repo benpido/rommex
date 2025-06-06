@@ -19,8 +19,9 @@ def refresh_data(request):
             start, end = stats['range']
         message = (
             f"Vuelos nuevos: {stats['fetched']} | "
-            f"Antofagasta: {stats['kept']} | "
+            f"Antofagasta: {stats['kept']} |"
             f"Descartados: {stats['discarded']} (fuera de la región)"
+             
             f"Rango: {start} → {end}")
 
 

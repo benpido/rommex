@@ -21,7 +21,7 @@ def load_json(path, default=None):
     return default
 
 def get_last_sync_timestamp_arrow(path: str) -> str | None:
-    """Return the last timestamp from ``path`` or ``None`` if unavailable."""
+    """Return the last timestamp from ``path`` in format 'YYYY-MM-DD+HH:MM:SS' or ``None`` if unavailable."""
     if not os.path.exists(path) or os.path.getsize(path) == 0:
         return None
     try:
@@ -33,8 +33,8 @@ def get_last_sync_timestamp_arrow(path: str) -> str | None:
     if col is None:
         return None
 
-    opts = pc.StrptimeOptions(               # <-- nuevo
-        format="%Y-%m-%dT%H:%M:%S",          # adapta si tu ISO varía
+    opts = pc.StrptimeOptions(
+        format="%Y-%m-%dT%H:%M:%S%z",
         unit="us",
         error_is_null=True                   # strings mal formados → null
     )
@@ -54,12 +54,13 @@ def get_last_sync_timestamp_arrow(path: str) -> str | None:
         return None
     if getattr(max_ts, "tzinfo", None):
         max_ts = max_ts.replace(tzinfo=None)
-    return max_ts.strftime("%Y-%m-%d %H:%M:%S")
+    
+    return max_ts.strftime("%Y-%m-%d+%H:%M:%S")
 
 def get_now_timestamp():
-    """Fecha/hora actual en formato 'YYYY-MM-DD HH:MM:SS'."""
+    """Fecha/hora actual en formato 'YYYY-MM-DD+HH:MM:SS'."""
     now = datetime.now()
-    return now.strftime("%Y-%m-%d %H:%M:%S")
+    return now.strftime("%Y-%m-%d+%H:%M:%S")
 
 def fetch_flights(query: dict, cfg: dict):
     """
