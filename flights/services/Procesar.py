@@ -1,7 +1,7 @@
 # El objetivo principal es crear columnas calculadas a partir de un CSV de vuelos
 # y guardar el resultado en un nuevo archivo CSV o Parquet.
 import pandas as pd
-
+import os
 # Listas de pilotos por equipo
 pilotos_turno_a = ["Marcelo Crosgrover", "Fernando Vargas"]
 pilotos_turno_b = ["Luciano Erazo", "Carlos Farias"]
@@ -153,33 +153,41 @@ def procesar_datos(input_parquet: str, output_parquet: str):
     aplica esquema y cálculos sólo al batch nuevo, concatena sin duplicados
     y reescribe el histórico completo.
     """
-    # 1) Cargo el histórico completo
-    df_existente = pd.read_parquet(output_parquet, engine="pyarrow")
-
+    # 1) Cargo el histórico completo, si existe y no está vacío
+    if os.path.exists(output_parquet) and os.path.getsize(output_parquet) > 0:
+        df_existente = pd.read_parquet(output_parquet, engine="pyarrow")
+    else:
+        df_existente = pd.DataFrame()
     # 2) Cargo y tipifico el batch nuevo
-    df_nuevo = pd.read_parquet(input_parquet, engine="pyarrow")
-    df_nuevo = definir_tipos(df_nuevo)  # <-- antes era definir_tipos(df)
+    if os.path.exists(input_parquet) and os.path.getsize(input_parquet) > 0:
+        df_nuevo = pd.read_parquet(input_parquet, engine="pyarrow")
+    else:
+        df_nuevo = pd.DataFrame()
 
+    if not df_nuevo.empty:
+        df_nuevo = definir_tipos(df_nuevo)
     # 3) Agrego columnas calculadas **sobre df_nuevo**
-    df_nuevo["Turno"] = df_nuevo["Flight/Service Date"].apply(calcular_turno)
-    df_nuevo["Uso % Bat"] = df_nuevo.apply(
-        lambda x: calcular_uso_bat(x["Takeoff Bat %"], x["Landing Bat %"]), axis=1
-    )
-    df_nuevo["Ground Seconds"] = df_nuevo.apply(
-        lambda x: calcular_ground_seconds(x["Air+Ground Seconds"], x["Air Seconds"]),
-        axis=1,
-    )
-    df_nuevo["Air Minutes"] = df_nuevo["Air Seconds"].apply(calcular_air_minutes)
-    df_nuevo["Air Hours"] = df_nuevo["Air Seconds"].apply(calcular_air_hours)
-    df_nuevo["Km Recorridos"] = df_nuevo["Total Mileage (Meters)"].apply(
-        calcular_km_recorridos
-    )
-    df_nuevo["Equipo Piloto"] = df_nuevo["Pilot-in-Command"].apply(
-        determinar_equipo_piloto
-    )
+        df_nuevo["Turno"] = df_nuevo["Flight/Service Date"].apply(calcular_turno)
+        df_nuevo["Uso % Bat"] = df_nuevo.apply(
+            lambda x: calcular_uso_bat(x["Takeoff Bat %"], x["Landing Bat %"]), axis=1
+        )
+        df_nuevo["Ground Seconds"] = df_nuevo.apply(
+            lambda x: calcular_ground_seconds(x["Air+Ground Seconds"], x["Air Seconds"]),
+            axis=1,
+        )
+        df_nuevo["Air Minutes"] = df_nuevo["Air Seconds"].apply(calcular_air_minutes)
+        df_nuevo["Air Hours"] = df_nuevo["Air Seconds"].apply(calcular_air_hours)
+        df_nuevo["Km Recorridos"] = df_nuevo["Total Mileage (Meters)"].apply(
+            calcular_km_recorridos
+        )
+        df_nuevo["Equipo Piloto"] = df_nuevo["Pilot-in-Command"].apply(
+            determinar_equipo_piloto
+        )
 
-    # 4) Uno histórico + nuevo
-    df = pd.concat([df_existente, df_nuevo], ignore_index=True)
+        # 4) Uno histórico + nuevo
+        df = pd.concat([df_existente, df_nuevo], ignore_index=True)
+    else:
+        df = df_existente
 
     # 5) Reindexo y sobrescribo el Parquet de salida
     df = df.reset_index(drop=True)

@@ -21,6 +21,9 @@ def load_json(path, default=None):
     return default
 
 def get_last_sync_timestamp_arrow(path: str) -> str | None:
+    """Return the last timestamp from ``path`` or ``None`` if unavailable."""
+    if not os.path.exists(path) or os.path.getsize(path) == 0:
+        return None
     try:
         dataset = ds.dataset(path, format="parquet")
     except FileNotFoundError:
@@ -161,7 +164,7 @@ def save_raw_parquet_pa(
         raise ValueError(f"'{id_field}' no está en el payload")
 
     # 2) Leer IDs existentes (solo esa columna → minimiza RAM)
-    if os.path.exists(parquet_path):
+    if os.path.exists(parquet_path) and os.path.getsize(parquet_path) > 0:
         ids_hist = pq.read_table(parquet_path, columns=[id_field])[id_field]
         existing_ids = set(ids_hist.to_pylist())          # Python set para lookup
         tbl_hist = pq.read_table(parquet_path)            # se usará luego al concatenar
@@ -170,7 +173,12 @@ def save_raw_parquet_pa(
         tbl_hist = None
 
     # 3) Filtrar solo los registros con ID nuevo
-    mask_new = pc.invert(pc.is_in(tbl_in[id_field], value_set=list(existing_ids)))
+    # Cast to Arrow array to avoid "not a valid value set" errors
+    id_set = pa.array(sorted(existing_ids))
+    try:
+        mask_new = pc.invert(pc.is_in(tbl_in[id_field], value_set=id_set))
+    except Exception:
+        mask_new = pc.invert(pc.is_in(tbl_in[id_field], value_set=list(existing_ids)))
     tbl_new = tbl_in.filter(mask_new)
 
     # 4) Concatenar y persistir si hay novedades
