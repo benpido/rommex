@@ -30,4 +30,5 @@ def run_etl():
         "kept": len(kept),
         "discarded": len(discarded),
         "api_total": stats.get("total") if isinstance(stats, dict) else None,
+        "range": stats.get("requested_range") if isinstance(stats, dict) else None,
     }

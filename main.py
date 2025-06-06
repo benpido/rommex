@@ -25,7 +25,11 @@ def main() -> None:
     procesar_datos(settings.PARQUET_API, settings.PARQUET_FINAL)
 
     total = stats.get("total") if isinstance(stats, dict) else "?"
+    start, end = (None, None)
+    if isinstance(stats.get("requested_range"), (list, tuple)):
+        start, end = stats["requested_range"]
     print(f"ETL completado. Vuelos procesados: {total}")
+    print(f"Rango consultado: {start} → {end}")
 
 
 if __name__ == "__main__":

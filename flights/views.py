@@ -13,11 +13,17 @@ def dashboard_view(request):
 def refresh_data(request):
     try:
         stats = run_etl()
+
+        start, end = (None, None)
+        if isinstance(stats.get('range'), (list, tuple)):
+            start, end = stats['range']
         message = (
             f"Vuelos nuevos: {stats['fetched']} | "
             f"Antofagasta: {stats['kept']} | "
-            f"Descartados: {stats['discarded']} (fuera de la región)")
-            
+            f"Descartados: {stats['discarded']} (fuera de la región)"
+            f"Rango: {start} → {end}")
+
+
     except Exception as e:
         message = f'Error al actualizar: {e}'
     return render(request, 'dashboard.html', {'message': message})
