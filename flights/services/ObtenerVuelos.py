@@ -236,6 +236,7 @@ def save_flights_to_parquet(flights, output_path):
     df = pd.DataFrame(rows)
     # Exportamos a Parquet sin índice para que Power BI lo lea limpio
     df.to_parquet(output_path, index=False)
+    return df
 
 
 def main(json_config, paquet_historico, parquet_api):
@@ -247,5 +248,7 @@ def main(json_config, paquet_historico, parquet_api):
     }
     api_resp, stats = fetch_flights(query, cfg)
     nuevos = save_raw_parquet_pa(api_resp, paquet_historico)
-    save_flights_to_parquet(nuevos.to_pandas().to_dict("records"), parquet_api)
-    return nuevos, stats
+    df_saved = save_flights_to_parquet(
+        nuevos.to_pandas().to_dict("records"), parquet_api
+    )
+    return nuevos, df_saved, stats

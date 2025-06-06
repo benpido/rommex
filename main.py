@@ -9,12 +9,12 @@ from flights.services.Clean import filtrar_region_antofagasta
 def main() -> None:
     """Execute the full ETL process using project settings."""
 
-    new_tbl, stats = obtener_vuelos(
+    new_tbl, df_new, stats = obtener_vuelos(
         settings.JSON_CONFIG,
         settings.PARQUET_HISTORICO,
         settings.PARQUET_API,
     )
-    records = new_tbl.to_pandas().to_dict("records") if new_tbl.num_rows else []
+    records = df_new.to_dict("records") if not df_new.empty else []
     kept, discarded = filtrar_region_antofagasta(records)
     print(
         f"Nuevos vuelos: {new_tbl.num_rows} | "
