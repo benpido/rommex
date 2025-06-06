@@ -64,7 +64,9 @@ def filtrar_region_antofagasta(records):
     Columnas esperadas: 'Longitud' y 'Latitude' (float).
     """
     df = pd.DataFrame(records).copy()
-
+    if df.empty:
+        print("Antofagasta \u2713 0 | Fuera \u2717 0")
+        return pd.DataFrame(), pd.DataFrame()
     # nos aseguramos de que sean numéricos
     df['Longitud'] = pd.to_numeric(df['Longitud'], errors='coerce')
     df['Latitude'] = pd.to_numeric(df['Latitude'], errors='coerce')
