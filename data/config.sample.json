@@ -1,0 +1,6 @@
+{
+  "base_url": "https://api.airdata.com",
+  "api_key": "your-api-key",
+  "endpoint": "/flights",
+  "page_size": 100
+}

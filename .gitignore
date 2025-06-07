@@ -1,5 +1,6 @@
 *.pbix
-/data/
+/data/*
+!/data/config.sample.json
 __pycache__/
 *.py[cod]
 *$py.class

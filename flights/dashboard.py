@@ -1,5 +1,5 @@
 from django.conf import settings
-from .services.ObtenerVuelos import main
+from .services.ObtenerVuelos import main as obtener_vuelos
 from .services.Procesar import procesar_datos
 from .services.Clean import filtrar_region_antofagasta
 
@@ -8,7 +8,7 @@ def run_etl():
     Ejecuta la secuencia completa de ETL y procesamiento.
     """
     # 1) Obtener y guardar vuelos crudos
-    new_tbl, df_new, stats = main(
+    new_tbl, df_new, stats = obtener_vuelos(
         settings.JSON_CONFIG,
         settings.PARQUET_HISTORICO,
         settings.PARQUET_API,

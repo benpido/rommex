@@ -19,6 +19,7 @@ descargar el archivo procesado.
 
 ## Instalacion
 - pip install -r requirements.txt
+- Las versiones probadas se indican en `requirements.txt`:
 
 ## Configuración
 - Crea una carpeta `data/` (excluida del repositorio) con los siguientes
