@@ -14,22 +14,22 @@ def main() -> None:
         settings.PARQUET_HISTORICO,
         settings.PARQUET_API,
     )
-    records = df_new.to_dict("records") if not df_new.empty else []
-    kept, discarded = filtrar_region_antofagasta(records)
-    print(
-        f"Nuevos vuelos: {new_tbl.num_rows} | "
-        f"En Antofagasta: {len(kept)} | "
-        f"Descartados fuera de la región: {len(discarded)}"
-    )
+    #records = df_new.to_dict("records") if not df_new.empty else []
+    #kept, discarded = filtrar_region_antofagasta(records)
+    #print(
+    #    f"Nuevos vuelos: {new_tbl.num_rows} | "
+    #    f"En Antofagasta: {len(kept)} | "
+    #    f"Descartados fuera de la región: {len(discarded)}"
+    #)
 
-    procesar_datos(settings.PARQUET_API, settings.PARQUET_FINAL)
+    #procesar_datos(settings.PARQUET_API, settings.PARQUET_FINAL)
 
-    total = stats.get("total") if isinstance(stats, dict) else "?"
-    start, end = (None, None)
-    if isinstance(stats.get("requested_range"), (list, tuple)):
-        start, end = stats["requested_range"]
-    print(f"ETL completado. Vuelos procesados: {total}")
-    print(f"Rango consultado: {start} → {end}")
+    #total = stats.get("total") if isinstance(stats, dict) else "?"
+    #start, end = (None, None)
+    #if isinstance(stats.get("requested_range"), (list, tuple)):
+    #    start, end = stats["requested_range"]
+    #print(f"ETL completado. Vuelos procesados: {total}")
+    #print(f"Rango consultado: {start} → {end}")
 
 
 if __name__ == "__main__":

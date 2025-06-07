@@ -38,7 +38,7 @@ def get_last_flight_timestamp(path: str) -> str | None:
             time = datetime.strptime(max_str, "%Y-%m-%d %H:%M:%S")
             if max_time is None or time > max_time:
                 max_time = time
-        return (max_time.strftime("%Y-%m-%d+%H:%M:%S"))
+        return (max_time.strftime("%Y-%m-%d %H:%M:%S"))
     except Exception:
         print(f"Error al obtener el último timestamp de {path}")
         return None
@@ -46,80 +46,45 @@ def get_last_flight_timestamp(path: str) -> str | None:
 def get_now_timestamp():
     """Fecha/hora actual en formato 'YYYY-MM-DD+HH:MM:SS'."""
     now = datetime.now()
-    return now.strftime("%Y-%m-%d+%H:%M:%S")
+    return now.strftime("%Y-%m-%d %H:%M:%S")
 
 def fetch_flights(query: dict, cfg: dict):
-    """
-    Descarga TODOS los vuelos dentro del rango indicado en `query`
-    paginando hasta que la API responda `moreResultsAvailable = False`.
+    url   = "https://api.airdata.com/flights"
+    limit = 100
 
-    Parameters
-    ----------
-    query : dict
-        Filtros permanentes (start, end, detail_level, etc.).
-    cfg : dict
-        Debe contener como mínimo:
-        {
-            "api_key":   "...",
-            "base_url":  "https://api.foo.com",
-            "endpoint":  "/v1/flights",
-            "page_size": 100          # opcional; default 100
-        }
+    try:
+        with requests.Session() as session:
+            session.auth    = (cfg["api_key"], "")
+            session.headers.update({"Content-Type": "application/json"})
 
-    Returns
-    -------
-    records : list[dict]
-    stats   : dict -> {
-        'requested_range': (start, end),
-        'total':           N,
-        'fetched_at':      'YYYY-MM-DDTHH:MM:SS'
-    }
-    """
-    # --- Validaciones rápidas -------------------------------------------------
-    required = {"api_key", "base_url", "endpoint"}
-    missing  = required - cfg.keys()
-    if missing:
-        raise ValueError(f"Faltan claves en cfg: {', '.join(missing)}")
+            vuelos, offset = [], 0
+            while True:
+                resp = session.get(
+                    url,
+                    params={**query, "limit": limit, "offset": offset},
+                    timeout=15
+                )
+                resp.raise_for_status()
 
-    limit   = cfg.get("page_size", 100)
-    url   = f"{cfg['base_url'].rstrip('/')}{cfg['endpoint']}"
+                payload = resp.json()
+                vuelos.extend(payload.get("data", []))
 
-    # Sesión express
-    session = requests.Session()
-    session.auth = (cfg["api_key"], "")
-    session.headers.update({"Content-Type": "application/json"})
+                if not payload.get("moreResultsAvailable"):
+                    stats = {
+                        "requested_range": (query.get("start"), query.get("end")),
+                        "total": len(vuelos),
+                        "fetched_at": datetime.now().isoformat(timespec="seconds"),
+                    }
+                    return vuelos, stats
 
-    records, offset = [], 0
+                offset += limit
+    except Exception as e:
+        print(f"Error al consultar la api: {e}")
+    return [], {}
 
-    while True:
-        params = {**query, "limit": limit, "offset": offset}
-        resp   = session.get(url, params=params)
-        resp.raise_for_status()
-
-        try:
-            payload = resp.json()
-        except ValueError:
-            snippet = resp.text[:200].replace("\n", " ")
-            raise RuntimeError(
-                f"Respuesta no-JSON (HTTP {resp.status_code}): {snippet!r}"
-            ) from None
-
-        records.extend(payload.get("data", []))
-
-        if not payload.get("moreResultsAvailable"):
-            stats = {
-                "requested_range": (query.get("start"), query.get("end")),
-                "total": len(records),
-                "fetched_at": datetime.now().isoformat(timespec="seconds"),
-            }
-            break
-
-        offset += limit
-
-    return records, stats
 
 def save_raw_parquet_pa(
-    records: list[dict],
+    vuelos: list[dict],
     parquet_path: str,
     id_field: str = "id",
     compression: str = "zstd",
@@ -129,7 +94,7 @@ def save_raw_parquet_pa(
 
     Parameters
     ----------
-    records       : list[dict]
+    vuelos       : list[dict]
         Payload crudo de la API.
     parquet_path  : str
         Ruta al archivo Parquet.
@@ -143,7 +108,7 @@ def save_raw_parquet_pa(
     pa.Table  (filas realmente añadidas)
     """
     # 1) Convertir el payload a Arrow Table
-    tbl_in = pa.Table.from_pylist(records)
+    tbl_in = pa.Table.from_pylist(vuelos)
     if tbl_in.num_rows == 0:
         return tbl_in                     # nada que guardar
 
@@ -228,19 +193,19 @@ def save_flights_to_parquet(flights, output_path):
 def main(json_config, paquet_historico, parquet_api):
     cfg   = load_json(json_config, {})
     query = {
-        "start": get_last_sync_timestamp_arrow(paquet_historico),
+        "start": get_last_flight_timestamp(paquet_historico),
         "end": get_now_timestamp(),
         "detail_level": "comprehensive",
     }
     api_resp, stats = fetch_flights(query, cfg)
+    print (api_resp)
+    print (stats)
     nuevos = save_raw_parquet_pa(api_resp, paquet_historico)
     df_saved = save_flights_to_parquet(
         nuevos.to_pandas().to_dict("records"), parquet_api
     )
     return nuevos, df_saved, stats
-
-
-
-a = get_last_flight_timestamp(r"C:\Users\benpi\OneDrive\Escritorio\AutoRommexDjango\rommex\data\historico.parquet")
-
-print (a)
+json_config       = r"C:\Users\benpi\OneDrive\Escritorio\AutoRommexDjango\rommex\data\config.json"
+paquet_historico  = r"C:\Users\benpi\OneDrive\Escritorio\AutoRommexDjango\rommex\data\historico.parquet"
+parquet_api       = r"C:\Users\benpi\OneDrive\Escritorio\AutoRommexDjango\rommex\data\flights_api.parquet"
+main(json_config, paquet_historico, parquet_api)
