@@ -20,42 +20,28 @@ def load_json(path, default=None):
             return json.load(f)
     return default
 
-def get_last_sync_timestamp_arrow(path: str) -> str | None:
-    """Return the last timestamp from ``path`` in format 'YYYY-MM-DD+HH:MM:SS' or ``None`` if unavailable."""
-    if not os.path.exists(path) or os.path.getsize(path) == 0:
-        return None
+def get_last_flight_timestamp(path: str) -> str | None:
+
+    """Return the last timestamp from parrot file in format 'YYYY-MM-DD+HH:MM:SS' or ``None`` if unavailable."""
     try:
+        if not os.path.exists(path) or os.path.getsize(path) == 0:
+            return None
+        
         dataset = ds.dataset(path, format="parquet")
-    except FileNotFoundError:
+        max_time: datetime | None = None
+        for times in dataset.to_batches(columns=["time"]):
+            #print (times)
+            time = times.column(0)
+            max_str = pc.max(time).as_py()
+
+            # Convertir a datetime
+            time = datetime.strptime(max_str, "%Y-%m-%d %H:%M:%S")
+            if max_time is None or time > max_time:
+                max_time = time
+        return (max_time.strftime("%Y-%m-%d+%H:%M:%S"))
+    except Exception:
+        print(f"Error al obtener el último timestamp de {path}")
         return None
-
-    col = next((c for c in ["timeISO", "time"] if c in dataset.schema.names), None)
-    if col is None:
-        return None
-
-    opts = pc.StrptimeOptions(
-        format="%Y-%m-%dT%H:%M:%S%z",
-        unit="us",
-        error_is_null=True                   # strings mal formados → null
-    )
-
-    max_ts = None
-    for batch in dataset.to_batches(columns=[col]):
-        arr = batch.column(0)
-
-        if pa.types.is_string(arr.type) or pa.types.is_large_string(arr.type):
-            arr = pc.strptime(arr, options=opts)
-
-        local = pc.max(arr).as_py()
-        if local and (max_ts is None or local > max_ts):
-            max_ts = local
-
-    if max_ts is None:
-        return None
-    if getattr(max_ts, "tzinfo", None):
-        max_ts = max_ts.replace(tzinfo=None)
-    
-    return max_ts.strftime("%Y-%m-%d+%H:%M:%S")
 
 def get_now_timestamp():
     """Fecha/hora actual en formato 'YYYY-MM-DD+HH:MM:SS'."""
@@ -239,7 +225,6 @@ def save_flights_to_parquet(flights, output_path):
     df.to_parquet(output_path, index=False)
     return df
 
-
 def main(json_config, paquet_historico, parquet_api):
     cfg   = load_json(json_config, {})
     query = {
@@ -253,3 +238,9 @@ def main(json_config, paquet_historico, parquet_api):
         nuevos.to_pandas().to_dict("records"), parquet_api
     )
     return nuevos, df_saved, stats
+
+
+
+a = get_last_flight_timestamp(r"C:\Users\benpi\OneDrive\Escritorio\AutoRommexDjango\rommex\data\historico.parquet")
+
+print (a)
